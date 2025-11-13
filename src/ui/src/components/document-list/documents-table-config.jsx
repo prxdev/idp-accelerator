@@ -171,7 +171,23 @@ const TIME_PERIOD_DROPDOWN_ITEMS = Object.keys(TIME_PERIOD_DROPDOWN_CONFIG).map(
 // local storage key to persist the last periods to load
 export const PERIODS_TO_LOAD_STORAGE_KEY = 'periodsToLoad';
 
-export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItems = [], onDelete, onReprocess, ...props }) => {
+// Processing status options for filtering (from backend Status enum)
+export const PROCESSING_STATUS_OPTIONS = [
+  { label: 'Queued', value: 'QUEUED' },
+  { label: 'Running', value: 'RUNNING' },
+  { label: 'OCR', value: 'OCR' },
+  { label: 'Classifying', value: 'CLASSIFYING' },
+  { label: 'Extracting', value: 'EXTRACTING' },
+  { label: 'Assessing', value: 'ASSESSING' },
+  { label: 'Post-processing', value: 'POSTPROCESSING' },
+  { label: 'HITL In Progress', value: 'HITL_IN_PROGRESS' },
+  { label: 'Summarizing', value: 'SUMMARIZING' },
+  { label: 'Evaluating', value: 'EVALUATING' },
+  { label: 'Completed', value: 'COMPLETED' },
+  { label: 'Failed', value: 'FAILED' },
+];
+
+export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItems = [], onDelete, onReprocess, statusFilter, onStatusFilterChange, ...props }) => {
   const onPeriodToLoadChange = ({ detail }) => {
     const { id } = detail;
     const shardCount = TIME_PERIOD_DROPDOWN_CONFIG[id].count;
@@ -179,8 +195,39 @@ export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItem
     localStorage.setItem(PERIODS_TO_LOAD_STORAGE_KEY, JSON.stringify(shardCount));
   };
 
+  const onStatusFilterClick = ({ detail }) => {
+    const clickedValue = detail.id;
+    const currentValues = (statusFilter || []).map(opt => opt.value);
+    
+    let newSelectedOptions;
+    if (currentValues.includes(clickedValue)) {
+      // Remove if already selected
+      newSelectedOptions = statusFilter.filter(opt => opt.value !== clickedValue);
+    } else {
+      // Add if not selected
+      const clickedOption = PROCESSING_STATUS_OPTIONS.find(opt => opt.value === clickedValue);
+      newSelectedOptions = [...(statusFilter || []), clickedOption];
+    }
+    
+    if (onStatusFilterChange) {
+      onStatusFilterChange(newSelectedOptions);
+    }
+  };
+
   // eslint-disable-next-line
   const periodText = TIME_PERIOD_DROPDOWN_ITEMS.filter((i) => i.count === props.periodsToLoad)[0]?.text || '';
+  
+  const selectedStatusValues = (statusFilter || []).map(opt => opt.value);
+  const statusFilterText = statusFilter && statusFilter.length > 0 
+    ? `Status: ${statusFilter.length} selected` 
+    : 'Status: All';
+
+  // Convert status options to ButtonDropdown items with checkboxes
+  const statusDropdownItems = PROCESSING_STATUS_OPTIONS.map(opt => ({
+    id: opt.value,
+    text: opt.label,
+    iconName: selectedStatusValues.includes(opt.value) ? 'check' : undefined,
+  }));
 
   const hasSelectedItems = selectedItems.length > 0;
 
@@ -191,6 +238,9 @@ export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItem
         <SpaceBetween size="xxs" direction="horizontal">
           <ButtonDropdown loading={props.loading} onItemClick={onPeriodToLoadChange} items={TIME_PERIOD_DROPDOWN_ITEMS}>
             {`Load: ${periodText}`}
+          </ButtonDropdown>
+          <ButtonDropdown loading={props.loading} onItemClick={onStatusFilterClick} items={statusDropdownItems}>
+            {statusFilterText}
           </ButtonDropdown>
           <Button iconName="refresh" variant="normal" loading={props.loading} onClick={() => props.setIsLoading(true)} />
           <Button iconName="download" variant="normal" loading={props.loading} onClick={() => props.downloadToExcel()} />

@@ -34,6 +34,8 @@ const logger = new ConsoleLogger('DocumentList');
 
 const DocumentList = () => {
   const [documentList, setDocumentList] = useState([]);
+  const [filteredDocumentList, setFilteredDocumentList] = useState([]);
+  const [statusFilter, setStatusFilter] = useState([]);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isReprocessModalVisible, setIsReprocessModalVisible] = useState(false);
   const { settings } = useSettingsContext();
@@ -56,7 +58,7 @@ const DocumentList = () => {
   // prettier-ignore
   const {
     items, actions, filteredItemsCount, collectionProps, filterProps, paginationProps,
-  } = useCollection(documentList, {
+  } = useCollection(filteredDocumentList, {
     filtering: {
       empty: <TableEmptyState resourceName="Document" />,
       noMatch: <TableNoMatchState onClearFilter={() => actions.setFiltering('')} />,
@@ -77,6 +79,20 @@ const DocumentList = () => {
       logger.debug('documents list is loading');
     }
   }, [isDocumentsListLoading, documents]);
+
+  // Apply status filter whenever documentList or statusFilter changes
+  useEffect(() => {
+    if (statusFilter.length === 0) {
+      // No filter applied, show all documents
+      setFilteredDocumentList(documentList);
+    } else {
+      // Filter documents by selected statuses
+      const selectedStatuses = statusFilter.map((option) => option.value);
+      const filtered = documentList.filter((doc) => selectedStatuses.includes(doc.objectStatus));
+      logger.debug('Filtered documents by status', { selectedStatuses, filteredCount: filtered.length });
+      setFilteredDocumentList(filtered);
+    }
+  }, [documentList, statusFilter]);
 
   useEffect(() => {
     logger.debug('setting selected items', collectionProps.selectedItems);
@@ -127,8 +143,10 @@ const DocumentList = () => {
             setIsLoading={setIsDocumentsListLoading}
             periodsToLoad={periodsToLoad}
             setPeriodsToLoad={setPeriodsToLoad}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
             getDocumentDetailsFromIds={getDocumentDetailsFromIds}
-            downloadToExcel={() => exportToExcel(documentList, 'Document-List')}
+            downloadToExcel={() => exportToExcel(filteredDocumentList, 'Document-List')}
             onReprocess={() => setIsReprocessModalVisible(true)}
             onDelete={() => setIsDeleteModalVisible(true)}
             // eslint-disable-next-line max-len, prettier/prettier

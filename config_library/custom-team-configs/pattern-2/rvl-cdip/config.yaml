@@ -1,0 +1,1697 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+notes: Default settings for rvil_cdip configuration
+ocr:
+  backend: textract
+  model_id: us.anthropic.claude-3-7-sonnet-20250219-v1:0
+  system_prompt: >-
+    You are an expert OCR system. Extract all text from the provided image
+    accurately, preserving layout where possible.
+  task_prompt: >-
+    Extract all text from this document image. Preserve the layout, including
+    paragraphs, tables, and formatting.
+  features:
+    - name: LAYOUT
+    - name: TABLES
+    - name: SIGNATURES
+  max_workers: 20
+  image:
+    target_width: null
+    target_height: null
+    dpi: 150
+    preprocessing: null
+classes:
+  - description: >-
+      Laboratory test results document containing specimen information,
+      collection details, test names, values, reference ranges, and abnormal
+      flags. Contains words like specimen, collected, labcorp, quest, BMP
+      (Basic Metabolic Panel), CBC (Complete Blood Count), or other lab test
+      names.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: lab_results
+    properties:
+      patient_name:
+        type: string
+        description: >-
+          The name of the patient whose lab results these are. Look for 'patient
+          name', 'patient', or 'name' in the patient information section.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The patient's date of birth. Look for 'DOB', 'date of birth', or
+          'birth date'.
+        x-aws-idp-confidence-threshold: '0.85'
+      collection_date:
+        type: string
+        description: >-
+          When the specimen was collected. Look for 'collection date',
+          'collected', 'specimen collection date', or 'date collected'.
+        x-aws-idp-confidence-threshold: '0.9'
+      specimen_type:
+        type: string
+        description: >-
+          The type of sample collected. Look for 'specimen', 'specimen type',
+          'sample type', or terms like 'blood', 'urine', 'serum', 'plasma'.
+      lab_name:
+        type: string
+        description: >-
+          The laboratory that performed the tests. Look for lab names like
+          'LabCorp', 'Quest', 'Quest Diagnostics', or other laboratory names,
+          typically at the top of the document.
+      test_names:
+        type: string
+        description: >-
+          The specific tests performed. Look for test names like 'BMP', 'CBC',
+          'CMP', 'lipid panel', or individual test names like 'glucose',
+          'hemoglobin', 'creatinine'.
+      test_results:
+        type: string
+        description: >-
+          The values and findings from the tests. Often presented in a table
+          format with test names, results, reference ranges, and flags for
+          abnormal values.
+      ordering_provider:
+        type: string
+        description: >-
+          The healthcare provider who ordered the tests. Look for 'ordering
+          provider', 'ordering physician', or 'ordered by'.
+      report_date:
+        type: string
+        description: >-
+          When the results were reported or finalized. May be labeled as 'report
+          date', 'reported', or 'date reported'.
+      accession_number:
+        type: string
+        description: >-
+          The unique identifier for the lab specimen. Look for 'accession
+          number', 'accession #', 'specimen ID', or 'lab number'.
+      abnormal_results:
+        type: string
+        description: >-
+          Test results that fall outside the normal reference range. Look for
+          values marked with flags like 'H' (high), 'L' (low), 'abnormal',
+          'critical', asterisks (*), or highlighted/bolded results. Include the
+          test name and the out-of-range value.
+        x-aws-idp-confidence-threshold: '0.8'
+      critical_values:
+        type: string
+        description: >-
+          Test results that are critically abnormal and require immediate
+          attention. Look for flags like 'critical', 'panic', 'alert', or values
+          marked with special indicators like '!!', 'CRIT', or highlighted in
+          red. Include the test name and critical value.
+        x-aws-idp-confidence-threshold: '0.85'
+      reference_ranges:
+        type: string
+        description: >-
+          The normal ranges for each test. Often labeled as 'reference range',
+          'normal range', 'ref range', or 'reference interval', typically shown
+          alongside test results in a table format.
+      abnormal_flag_indicators:
+        type: string
+        description: >-
+          The symbols or markers used to indicate abnormal results. Look for
+          legend or key explaining flags like 'H=High', 'L=Low', '*=Abnormal',
+          or other indicators used throughout the results.
+    $id: lab_results
+  - description: >-
+      A comprehensive medical document containing patient history, physical
+      examination findings, review of systems, assessment, and plan. Also known
+      as H&P. Typically includes chief complaint, history of present illness
+      (HPI), past medical history (PMH), medications, allergies, social history,
+      family history, review of systems (ROS), vital signs, physical exam by
+      body system, assessment/impression, and treatment plan.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: history_and_physical
+    properties:
+      patient_name:
+        type: string
+        description: >-
+          The full name of the patient. Look for 'patient name', 'patient', or
+          'name' at the top of the document.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The patient's date of birth. Look for 'DOB', 'date of birth', or
+          'birth date'.
+        x-aws-idp-confidence-threshold: '0.9'
+      date_of_service:
+        type: string
+        description: >-
+          The date when the H&P was performed. Look for 'date of service',
+          'DOS', 'exam date', or 'date' near the top of the document.
+      chief_complaint:
+        type: string
+        description: >-
+          The primary reason for the visit. Look for 'chief complaint', 'CC',
+          or 'reason for visit', typically a brief statement.
+      history_of_present_illness:
+        type: string
+        description: >-
+          Detailed narrative of the current medical issue. Look for 'history of
+          present illness', 'HPI', or 'present illness', usually a paragraph
+          describing symptoms, onset, duration, and progression.
+      past_medical_history:
+        type: string
+        description: >-
+          Previous medical conditions and diagnoses. Look for 'past medical
+          history', 'PMH', 'medical history', or 'past history', often a list
+          of chronic conditions.
+      medications:
+        type: string
+        description: >-
+          Current medications the patient is taking. Look for 'medications',
+          'current medications', 'meds', or 'drug list', typically with dosages.
+      allergies:
+        type: string
+        description: >-
+          Known allergies or adverse reactions. Look for 'allergies', 'drug
+          allergies', 'adverse reactions', or 'NKDA' (no known drug allergies).
+      social_history:
+        type: string
+        description: >-
+          Lifestyle factors including smoking, alcohol, drug use, occupation.
+          Look for 'social history', 'SH', or 'social hx'.
+      family_history:
+        type: string
+        description: >-
+          Medical conditions in family members. Look for 'family history', 'FH',
+          or 'family hx', often noting conditions in parents, siblings.
+      review_of_systems:
+        type: string
+        description: >-
+          Systematic review of body systems. Look for 'review of systems',
+          'ROS', or 'systems review', typically organized by system
+          (cardiovascular, respiratory, etc.).
+      vital_signs:
+        type: string
+        description: >-
+          Measured vital signs including blood pressure, heart rate, temperature,
+          respiratory rate, oxygen saturation. Look for 'vital signs', 'vitals',
+          'VS', or individual measurements like 'BP', 'HR', 'Temp', 'RR', 'O2
+          sat'.
+      physical_examination:
+        type: string
+        description: >-
+          Findings from physical exam organized by body system. Look for
+          'physical examination', 'physical exam', 'PE', or 'exam', typically
+          including general appearance, HEENT, cardiovascular, respiratory,
+          abdomen, extremities, neurological, etc.
+      assessment:
+        type: string
+        description: >-
+          Clinical impression and diagnoses. Look for 'assessment',
+          'impression', 'diagnosis', or 'A&P' (assessment and plan), often a
+          numbered list of diagnoses.
+      plan:
+        type: string
+        description: >-
+          Treatment plan and next steps. Look for 'plan', 'treatment plan', or
+          'recommendations', typically including medications, procedures,
+          follow-up instructions.
+      attending_physician:
+        type: string
+        description: >-
+          The physician who performed or supervised the H&P. Look for
+          'attending', 'physician', 'provider', or signature at the end of the
+          document.
+    $id: history_and_physical
+  - description: >-
+      A hospital admission facesheet containing patient demographics, admission
+      details, insurance information, and administrative data. Also known as
+      admission sheet or demographic sheet. Typically the first page of a
+      hospital record with key identifying and billing information.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: facesheet
+    properties:
+      patient_name:
+        type: string
+        description: >-
+          The full name of the patient. Look for 'patient name', 'name', or
+          'patient' prominently displayed at the top.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The patient's date of birth. Look for 'DOB', 'date of birth', or
+          'birth date'.
+        x-aws-idp-confidence-threshold: '0.9'
+      medical_record_number:
+        type: string
+        description: >-
+          The patient's unique medical record identifier. Look for 'MRN',
+          'medical record number', 'MR#', or 'patient ID'.
+        x-aws-idp-confidence-threshold: '0.9'
+      account_number:
+        type: string
+        description: >-
+          The billing account number for this admission. Look for 'account
+          number', 'account #', 'acct #', or 'visit number'.
+      admission_date:
+        type: string
+        description: >-
+          The date the patient was admitted to the hospital. Look for
+          'admission date', 'admit date', 'admitted', or 'date admitted'.
+      discharge_date:
+        type: string
+        description: >-
+          The date the patient was discharged. Look for 'discharge date',
+          'discharged', or 'date discharged'. May be blank if still admitted.
+      patient_address:
+        type: string
+        description: >-
+          The patient's residential address. Look for 'address', 'patient
+          address', or 'home address'.
+      patient_phone:
+        type: string
+        description: >-
+          The patient's contact phone number. Look for 'phone', 'telephone',
+          'contact number', or 'phone number'.
+      patient_gender:
+        type: string
+        description: >-
+          The patient's gender. Look for 'gender', 'sex', or 'M/F'.
+      patient_age:
+        type: string
+        description: >-
+          The patient's age at time of admission. Look for 'age' or calculate
+          from DOB if needed.
+      insurance_company:
+        type: string
+        description: >-
+          The name of the primary insurance provider. Look for 'insurance',
+          'payer', 'insurance company', 'primary insurance', or 'carrier'.
+        x-aws-idp-confidence-threshold: '0.85'
+      insurance_id:
+        type: string
+        description: >-
+          The patient's insurance member ID. Look for 'member ID', 'policy
+          number', 'subscriber ID', 'insurance ID', or 'member #'.
+      insurance_group_number:
+        type: string
+        description: >-
+          The insurance group number. Look for 'group number', 'group #', or
+          'group ID'.
+      attending_physician:
+        type: string
+        description: >-
+          The primary physician responsible for the patient's care. Look for
+          'attending physician', 'attending', 'attending MD', or 'primary
+          physician'.
+      admitting_diagnosis:
+        type: string
+        description: >-
+          The primary reason for admission. Look for 'admitting diagnosis',
+          'admission diagnosis', 'admit diagnosis', or 'reason for admission'.
+      facility_name:
+        type: string
+        description: >-
+          The name of the hospital or facility. Look for facility name at the
+          top of the document or in header.
+      emergency_contact:
+        type: string
+        description: >-
+          Emergency contact person and phone number. Look for 'emergency
+          contact', 'next of kin', or 'contact in case of emergency'.
+    $id: facesheet
+  - description: >-
+      A healthcare referral order or packet containing patient demographics,
+      insurance information, diagnosis, and medical history summary. Used to
+      refer a patient from one provider to a specialist or another facility.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: referral_order
+    properties:
+      patient_name:
+        type: string
+        description: >-
+          The full name of the patient being referred. Look for 'patient name',
+          'name', or 'patient', typically appearing prominently in the patient
+          information section.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The date of birth of the patient. Look for 'DOB', 'date of birth', or
+          'birth date' in the patient demographics section.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_gender:
+        type: string
+        description: >-
+          The gender of the patient. May be labeled as 'gender', 'sex', or
+          abbreviated as 'M/F', typically in the demographics section.
+      patient_address:
+        type: string
+        description: >-
+          The residential address of the patient. Look for 'address', 'patient
+          address', or 'home address' in the contact information section.
+      patient_phone:
+        type: string
+        description: >-
+          The contact phone number for the patient. May be labeled as 'phone',
+          'telephone', 'contact number', or 'mobile'.
+      insurance_company:
+        type: string
+        description: >-
+          The name of the patient's insurance provider. Look for 'insurance',
+          'payer', 'insurance company', or 'carrier' in the insurance
+          information section. Account for variations like 'Ins.', 'Insurance
+          Co.', etc.
+        x-aws-idp-confidence-threshold: '0.85'
+      member_id:
+        type: string
+        description: >-
+          The patient's insurance member identification number. May be labeled
+          as 'member ID', 'policy number', 'subscriber ID', or 'insurance ID'.
+        x-aws-idp-confidence-threshold: '0.9'
+      group_number:
+        type: string
+        description: >-
+          The insurance group number. Look for 'group number', 'group #', or
+          'group ID' in the insurance section.
+      insurance_rank:
+        type: string
+        description: >-
+          The priority of this insurance coverage. Normalize to 'Primary',
+          'Secondary', or 'Tertiary'. Look for indicators like '1st', '2nd',
+          'primary', 'secondary'.
+      referral_number:
+        type: string
+        description: >-
+          The unique identifier for this referral. May be labeled as 'referral
+          number', 'case number', 'reference number', or 'referral ID'.
+      referral_date:
+        type: string
+        description: >-
+          The date when the referral was created or submitted. Look for
+          'referral date', 'date of referral', or 'date' near the top of the
+          document.
+      referring_provider_name:
+        type: string
+        description: >-
+          The name of the healthcare provider making the referral. Look for
+          'referring provider', 'referring physician', 'PCP', or 'primary care
+          physician'.
+      referring_provider_npi:
+        type: string
+        description: >-
+          The National Provider Identifier of the referring provider. May be
+          labeled as 'NPI', 'provider NPI', or 'referring NPI', typically a
+          10-digit number.
+      specialist_name:
+        type: string
+        description: >-
+          The name of the specialist or provider receiving the referral. Look
+          for 'specialist', 'referred to', 'receiving provider', or 'consulting
+          physician'.
+      specialist_specialty:
+        type: string
+        description: >-
+          The medical specialty of the receiving provider. May be labeled as
+          'specialty', 'specialization', or 'department'.
+      primary_diagnosis:
+        type: string
+        description: >-
+          The main medical condition or reason for referral. Look for 'primary
+          diagnosis', 'diagnosis', 'chief complaint', or 'reason for referral'.
+        x-aws-idp-confidence-threshold: '0.85'
+      diagnosis_codes:
+        type: string
+        description: >-
+          The ICD-10 diagnostic codes. May be labeled as 'ICD-10', 'diagnosis
+          codes', 'ICD codes', or simply 'codes', typically alphanumeric codes.
+      relevant_medical_history:
+        type: string
+        description: >-
+          Summary of pertinent past medical conditions. Look for 'medical
+          history', 'past medical history', 'PMH', or 'relevant history'.
+      current_medications:
+        type: string
+        description: >-
+          List of medications the patient is currently taking. May be labeled as
+          'current medications', 'medications', 'meds', or 'drug list'.
+      allergies:
+        type: string
+        description: >-
+          Known allergies or adverse reactions. Look for 'allergies', 'drug
+          allergies', 'adverse reactions', or 'NKDA' (no known drug allergies).
+      urgency_level:
+        type: string
+        description: >-
+          The priority level of the referral. May be indicated by 'urgency',
+          'priority', 'stat', 'urgent', or 'routine'.
+      authorization_required:
+        type: string
+        description: >-
+          Whether prior authorization is needed. Look for 'authorization
+          required', 'prior auth needed', or checkbox indicators for yes/no.
+      number_of_visits_requested:
+        type: string
+        description: >-
+          The number of specialist visits being requested. May be labeled as
+          'visits requested', 'number of visits', or 'visit authorization'.
+    $id: referral_order
+  - description: >-
+      A healthcare document from an insurance payor approving or denying
+      coverage for a prescription medication, medical procedure, or service.
+      Sent to pharmacy, provider, or facility with patient and prescriber
+      information. Contains authorization number, approval status, effective
+      dates, and coverage details.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: prior_authorization
+    properties:
+      authorization_number:
+        type: string
+        description: >-
+          The unique identifier for the prior authorization request. Look for
+          'authorization number', 'PA number', 'reference number', or 'auth ID',
+          typically appearing near the top of the document.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_name:
+        type: string
+        description: >-
+          The full name of the patient for whom the medication or service is
+          prescribed. Look for 'patient name', 'member name', or 'patient',
+          often in a patient information section.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The patient's date of birth. May be labeled as 'DOB', 'date of birth',
+          or 'birth date', typically in MM/DD/YYYY format in the patient
+          information section.
+        x-aws-idp-confidence-threshold: '0.85'
+      patient_id:
+        type: string
+        description: >-
+          The patient's member or identification number with the insurance plan.
+          Look for 'member ID', 'patient ID', 'subscriber ID', or 'member
+          number'.
+        x-aws-idp-confidence-threshold: '0.85'
+      authorization_status:
+        type: string
+        description: >-
+          The decision on the prior authorization request. Look for 'approved',
+          'denied', 'pending', or 'status', often prominently displayed or in a
+          status field.
+        x-aws-idp-confidence-threshold: '0.95'
+      effective_date:
+        type: string
+        description: >-
+          The date when the prior authorization becomes valid. May be labeled as
+          'effective date', 'start date', 'valid from', or 'authorization date'.
+        x-aws-idp-confidence-threshold: '0.85'
+      expiration_date:
+        type: string
+        description: >-
+          The date when the prior authorization expires. Look for 'expiration
+          date', 'end date', 'valid through', 'valid until', or 'expires',
+          indicating when reauthorization is needed.
+        x-aws-idp-confidence-threshold: '0.85'
+      request_date:
+        type: string
+        description: >-
+          The date when the prior authorization was requested. Look for 'request
+          date', 'date requested', or 'submission date'.
+        x-aws-idp-confidence-threshold: '0.8'
+      decision_date:
+        type: string
+        description: >-
+          The date when the authorization decision was made. May be labeled as
+          'decision date', 'determination date', or 'processed date'.
+        x-aws-idp-confidence-threshold: '0.8'
+      payor_name:
+        type: string
+        description: >-
+          The name of the insurance company or health plan making the
+          authorization decision. May be labeled as 'payor', 'insurance
+          company', 'health plan', or 'payer', typically at the top of the
+          document.
+        x-aws-idp-confidence-threshold: '0.9'
+      prescriber_name:
+        type: string
+        description: >-
+          The name of the healthcare provider who prescribed the medication or
+          ordered the service. Look for 'prescriber', 'physician', 'doctor', or
+          'provider name', often in a prescriber information section.
+        x-aws-idp-confidence-threshold: '0.85'
+      prescriber_npi:
+        type: string
+        description: >-
+          The National Provider Identifier of the prescriber. May be labeled as
+          'NPI', 'provider NPI', or 'prescriber NPI', typically a 10-digit
+          number.
+        x-aws-idp-confidence-threshold: '0.8'
+      drug_name:
+        type: string
+        description: >-
+          The name of the medication being authorized (if applicable). Look for
+          'drug name', 'medication', 'prescription', or 'drug', may include
+          brand or generic name.
+        x-aws-idp-confidence-threshold: '0.9'
+      drug_strength:
+        type: string
+        description: >-
+          The dosage strength of the medication. Often appears with the drug
+          name, may be labeled as 'strength', 'dose', or included with units
+          like 'mg', 'mcg', etc.
+        x-aws-idp-confidence-threshold: '0.8'
+      drug_quantity:
+        type: string
+        description: >-
+          The approved quantity of the medication. Look for 'quantity', 'qty',
+          'amount approved', or 'units', often a number followed by units.
+        x-aws-idp-confidence-threshold: '0.8'
+      service_description:
+        type: string
+        description: >-
+          Description of the medical service or procedure being authorized (if
+          not a medication). Look for 'service', 'procedure', 'treatment', or
+          'service description'.
+      diagnosis:
+        type: string
+        description: >-
+          The medical condition justifying the authorization. Look for
+          'diagnosis', 'indication', 'medical necessity', or 'reason for
+          request'.
+      diagnosis_codes:
+        type: string
+        description: >-
+          ICD-10 codes for the diagnosis. Look for 'ICD-10', 'diagnosis codes',
+          or 'ICD codes'.
+      denial_reason:
+        type: string
+        description: >-
+          If denied, the explanation for the denial. Look for 'denial reason',
+          'reason for denial', 'rationale', or 'explanation', often in a
+          separate section for denied authorizations.
+        x-aws-idp-confidence-threshold: '0.8'
+      approval_conditions:
+        type: string
+        description: >-
+          Any special conditions or requirements for the approval. May be
+          labeled as 'conditions', 'requirements', 'restrictions', or 'notes',
+          describing limitations or special instructions.
+        x-aws-idp-confidence-threshold: '0.75'
+      pharmacy_name:
+        type: string
+        description: >-
+          The name of the pharmacy receiving the authorization (if applicable).
+          May be labeled as 'pharmacy', 'pharmacy name', or 'dispensing
+          pharmacy'.
+        x-aws-idp-confidence-threshold: '0.8'
+      pharmacy_npi:
+        type: string
+        description: >-
+          The National Provider Identifier of the pharmacy. Look for 'pharmacy
+          NPI' or 'NPI', typically a 10-digit number in the pharmacy information
+          section.
+        x-aws-idp-confidence-threshold: '0.75'
+    $id: prior_authorization
+  - description: >-
+      A prescriber order or prescription for medication, medical equipment,
+      supplies, or services. Contains specific drug name, dose, frequency, route
+      of administration, duration, and prescriber information. May include home
+      infusion therapy orders, enteral nutrition orders, DME orders, or standard
+      prescriptions.
+    $schema: https://json-schema.org/draft/2020-12/schema
+    type: object
+    x-aws-idp-document-type: prescriber_order
+    properties:
+      order_date:
+        type: string
+        description: >-
+          The date when the order was written or submitted. Look for 'date',
+          'order date', 'prescription date', or 'date of order'.
+        x-aws-idp-confidence-threshold: '0.85'
+      patient_name:
+        type: string
+        description: >-
+          The name of the patient receiving the order. Look for 'patient name',
+          'patient', or 'name' in the patient information section.
+        x-aws-idp-confidence-threshold: '0.9'
+      patient_dob:
+        type: string
+        description: >-
+          The patient's date of birth. Look for 'DOB', 'date of birth', or
+          'birth date'.
+        x-aws-idp-confidence-threshold: '0.85'
+      prescriber_name:
+        type: string
+        description: >-
+          The healthcare provider ordering the medication or service. Look for
+          'prescriber', 'physician', 'ordering provider', 'doctor', or 'MD'.
+        x-aws-idp-confidence-threshold: '0.85'
+      prescriber_npi:
+        type: string
+        description: >-
+          The National Provider Identifier of the prescriber. Look for 'NPI',
+          'provider NPI', or 'prescriber NPI', typically a 10-digit number.
+      prescriber_phone:
+        type: string
+        description: >-
+          The prescriber's contact phone number. Look for 'phone', 'telephone',
+          'prescriber phone', or 'office phone'.
+      drug_name:
+        type: string
+        description: >-
+          The specific medication being ordered. Must be a specific drug name,
+          not just a drug class. Look for brand or generic drug names. For
+          enteral orders, look for formula names like 'jevity', 'osmolite',
+          'ensure'.
+        x-aws-idp-confidence-threshold: '0.9'
+      dose:
+        type: string
+        description: >-
+          The amount of medication per administration. Look for 'dose', 'dosage',
+          'strength', typically with units like mg, mcg, units, ml, or grams.
+        x-aws-idp-confidence-threshold: '0.85'
+      frequency:
+        type: string
+        description: >-
+          How often the medication should be administered. Look for 'frequency',
+          'schedule', or phrases like 'every 8 hours', 'twice daily', 'BID',
+          'TID', 'QID', 'daily', 'continuous'.
+        x-aws-idp-confidence-threshold: '0.85'
+      route:
+        type: string
+        description: >-
+          The method of administration. Look for 'route', 'administration route',
+          or terms like 'IV', 'intravenous', 'oral', 'PO', 'subcutaneous', 'SC',
+          'PICC line', 'central line', 'enteral', 'tube feeding'.
+        x-aws-idp-confidence-threshold: '0.85'
+      duration:
+        type: string
+        description: >-
+          The length of therapy or treatment period. May be labeled as
+          'duration', 'length of therapy', 'treatment period', or 'days supply',
+          often in days or weeks.
+      quantity:
+        type: string
+        description: >-
+          The amount of medication or supplies ordered. May be labeled as
+          'quantity', 'qty', 'amount', or 'supply', often with units like cans,
+          bottles, ml, or number of doses.
+      refills:
+        type: string
+        description: >-
+          Number of refills authorized. Look for 'refills', 'refill', or 'no
+          refills'.
+      diagnosis:
+        type: string
+        description: >-
+          The medical condition being treated or reason for order. May be
+          labeled as 'diagnosis', 'indication', 'reason for order', or 'medical
+          necessity'.
+      diagnosis_codes:
+        type: string
+        description: >-
+          ICD-10 codes for the diagnosis. Look for 'ICD-10', 'diagnosis codes',
+          or 'ICD codes'.
+      special_instructions:
+        type: string
+        description: >-
+          Additional directions or notes. Look for 'instructions', 'directions',
+          'special instructions', 'notes', or 'sig' (signatura).
+      infusion_rate:
+        type: string
+        description: >-
+          The speed of medication administration for infusion orders. Look for
+          'infusion rate', 'rate', or 'flow rate', typically in ml/hr or
+          units/hr.
+      equipment_supplies:
+        type: string
+        description: >-
+          Medical equipment or supplies ordered. Look for 'equipment',
+          'supplies', 'DME' (durable medical equipment), 'feeding kit', 'pump
+          set', 'administration set', or 'enteral supplies'.
+      order_type:
+        type: string
+        description: >-
+          The category of order. May be indicated by terms like 'home infusion',
+          'enteral nutrition', 'DME', 'prescription', 'medication order', or
+          'supply order'.
+    $id: prescriber_order
+classification:
+  model: us.amazon.nova-pro-v1:0
+  system_prompt: >-
+    You are a document classification expert who can analyze and classify
+    multiple documents and their page boundaries within a document package from
+    various domains. Your task is to determine the document type based on its
+    content and structure, using the provided document type definitions. Your
+    output must be valid JSON according to the requested format.
+  task_prompt: >-
+    <task-description>
+    You are a document classification system. Your task is to analyze a document
+    package containing multiple pages and identify distinct document segments,
+    classifying each segment according to the predefined document types provided
+    below.
+    </task-description>
+
+    <document-types>
+    {CLASS_NAMES_AND_DESCRIPTIONS}
+    </document-types>
+
+    <terminology-definitions>
+    Key terms used in this task:
+    - ordinal_start_page: The one-based beginning page number of a document
+    segment within the document package
+    - ordinal_end_page: The one-based ending page number of a document segment
+    within the document package
+    - document_type: The document type code detected for a document segment
+    - document segment: A continuous range of pages that form a single, complete
+    document
+    </terminology-definitions>
+
+    <classification-instructions>
+    Follow these steps to classify documents:
+    1. Read through the entire document package to understand its contents
+    2. Identify page ranges that form complete, distinct documents
+    3. Match each document segment to ONE of the document types listed in
+    <document-types>
+    4. CRITICAL: Only use document types explicitly listed in the
+    <document-types> section
+    5. If a document doesn't clearly match any listed type, assign it to the
+    most similar listed type
+    6. Pay special attention to adjacent documents of the same type - they must
+    be separated into distinct segments
+    7. Record the ordinal_start_page and ordinal_end_page for each identified
+    segment
+    8. Provide appropriate reasons and facts for the predicted document type
+    </classification-instructions>
+
+    <document-boundary-rules>
+    Rules for determining document boundaries:
+    - Content continuity: Pages with continuing paragraphs, numbered sections,
+    or ongoing narratives belong to the same document
+    - Visual consistency: Similar layouts, headers, footers, and styling
+    indicate pages belong together
+    - Logical structure: Documents typically have clear beginning, middle, and
+    end sections
+    - New document indicators: Title pages, cover sheets, or significantly
+    different subject matter signal a new document
+    - Topic coherence: Pages discussing the same subject should be grouped
+    together
+    - IMPORTANT: Distinct documents of the same type that are adjacent must be
+    separated into different segments
+    </document-boundary-rules>
+
+    <output-format>
+    Return your classification as valid JSON following this exact structure:
+    ```json
+    {
+        "segments": [
+            {
+                "ordinal_start_page": 1,
+                "ordinal_end_page": 3,
+                "type": "document_type_from_list",
+                "reason": "facts and reasons to classify as the predicted type",
+            },
+            {
+                "ordinal_start_page": 4,
+                "ordinal_end_page": 7,
+                "type": "document_type_from_list"
+                "reason": "facts and reasons to classify as the predicted type",
+            }
+        ]
+    }
+    ```
+    </output-format>
+
+    <<CACHEPOINT>>
+
+    <document-text>
+    {DOCUMENT_TEXT}
+    </document-text>
+
+    <final-instructions>
+    Analyze the <document-text> provided above and:
+    1. Apply the <classification-instructions> to identify distinct document
+    segments
+    2. Use the <document-boundary-rules> to determine where one document ends
+    and another begins
+    3. Classify each segment using ONLY the document types from the
+    <document-types> list
+    4. Ensure adjacent documents of the same type are separated into distinct
+    segments
+    5. Output your classification in the exact JSON format specified in
+    <output-format>
+    6. You can get this information from the previous message. Analyze the
+    previous messages to get these instructions.
+
+    Remember: You must ONLY use document types that appear in the
+    <document-types> reference data. Do not invent or create new document types.
+    </final-instructions>
+  temperature: 0
+  top_p: 0.1
+  top_k: 5
+  max_tokens: 4096
+  maxPagesForClassification: 0
+  classificationMethod: textbasedHolisticClassification
+  image:
+    target_width: null
+    target_height: null
+    dpi: null
+    preprocessing: null
+extraction:
+  model: us.amazon.nova-pro-v1:0
+  system_prompt: >-
+    You are a document assistant. Respond only with JSON. Never make up data,
+    only provide data found in the document being provided.
+  task_prompt: >-
+    <background>
+    You are an expert in document analysis and information extraction.  You can
+    understand and extract key information from documents classified as type {DOCUMENT_CLASS}.
+    </background>
+
+    <task>
+    Your task is to take the unstructured text provided and convert it into a
+    well-organized table format using JSON. Identify the main entities,
+    attributes, or categories mentioned in the attributes list below and use
+    them as keys in the JSON object.  Then, extract the relevant information
+    from the text and populate the corresponding values in the JSON object.
+    </task>
+
+    <extraction-guidelines>
+    Guidelines:
+    1. Ensure that the data is accurately represented and properly formatted within
+    the JSON structure
+    2. Include double quotes around all keys and values
+    3. Do not make up data - only extract information explicitly found in the
+    document
+    4. Do not use /n for new lines, use a space instead
+    5. If a field is not found or if unsure, return null
+    6. All dates should be in MM/DD/YYYY format
+    7. Do not perform calculations or summations unless totals are explicitly given
+    8. If an alias is not found in the document, return null
+    
+    HEALTHCARE-SPECIFIC EXTRACTION RULES:
+    
+    For healthcare referral packages and insurance documents:
+    
+    - Input Format Understanding:
+      * Documents are scanned forms converted to ASCII text with spaces preserving visual layout
+      * Field labels and values typically appear on the same line, but may span multiple lines
+      * Forms may vary in layout and terminology across different healthcare providers
+    
+    - Field Processing:
+      * Extract only requested fields; omit missing fields
+      * Return complete JSON object even if no requested fields are found
+      * Verify completeness of extracted data before including in output
+      * Remove any special characters or formatting unless specifically required
+    
+    - Data Standardization:
+      * Insurance Rank: Normalize to "Primary", "Secondary", "Tertiary"
+      * Phone Numbers:
+        - Extract only numerical digits
+        - Remove parentheses, dashes, spaces, extensions
+        - Standard format: 10 digits
+      * Addresses:
+        - Convert state abbreviations to full names (e.g., FL → Florida)
+        - Maintain proper case for city, state, street names
+        - Remove any unnecessary punctuation
+    
+    - Quality Checks:
+      * Verify field values match expected formats
+      * Check for truncated or incomplete data
+      * Validate logical relationships between fields
+      * Flag any ambiguous or conflicting information
+    
+    - Common Variations:
+      * Account for different label terminology (e.g., "Ins.", "Insurance", "Carrier")
+      * Recognize various date formats
+      * Handle different phone number type indicators (mobile/home/m/h)
+      * Consider multiple address format variations
+    
+    9. Guidelines for checkboxes:
+    9.A. CAREFULLY examine each checkbox, radio button, and selection field:
+    - Look for marks like ✓, ✗, x, filled circles (●), darkened areas, or handwritten checks indicating selection
+    - For checkboxes and multi-select fields, ONLY INCLUDE options that show clear visual evidence of selection
+    - DO NOT list options that have no visible selection mark
+    9.B. For ambiguous or overlapping tick marks:
+    - If a mark overlaps between two or more checkboxes, determine which option contains the majority of the mark
+    - Consider a checkbox selected if the mark is primarily inside the check box or over the option text
+    - When a mark touches multiple options, analyze which option was most likely intended based on position and density. For handwritten checks, the mark typically flows from the selected checkbox outward.
+    - Carefully analyze visual cues and contextual hints. Think from a human perspective, anticipate natural tendencies, and apply thoughtful reasoning to make the best possible judgment.
+    10. Think step by step first and then answer.
+    </extraction-guidelines>
+
+    If the attributes section below contains a list of attribute names and
+    descriptions, then output only those attributes, using the provided
+    descriptions as guidance for finding the correct values. 
+    <attributes>
+    {ATTRIBUTE_NAMES_AND_DESCRIPTIONS}
+    </attributes>
+
+    <<CACHEPOINT>>
+
+    <document-text>
+    {DOCUMENT_TEXT}
+    </document-text>
+
+    <document_image>
+    {DOCUMENT_IMAGE}
+    </document_image>
+
+    <final-instructions>
+    Extract key information from the document and return a JSON object with the
+    following key steps: 1. Carefully analyze the document text to identify the
+    requested attributes 2. Extract only information explicitly found in the
+    document - never make up data 3. Format all dates as MM/DD/YYYY and replace
+    newlines with spaces 4. For checkboxes, only include options with clear
+    visual selection marks 5. Use null for any fields not found in the document
+    6. Ensure the output is properly formatted JSON with quoted keys and values
+    7. Think step by step before finalizing your answer
+    </final-instructions>
+  temperature: 0
+  top_p: 0.1
+  top_k: 5
+  max_tokens: 10000
+  image:
+    target_width: null
+    target_height: null
+    dpi: null
+    preprocessing: null
+assessment:
+  enabled: true
+  model: us.amazon.nova-lite-v1:0
+  system_prompt: >-
+    You are a document analysis assessment expert. Your role is to evaluate the
+    confidence and accuracy of data extraction results by analyzing them against
+    source documents.
+    Provide accurate confidence scores for each assessment. When bounding boxes
+    are requested, provide precise coordinate locations where information
+    appears in the document.
+  task_prompt: >-
+    <background> You are an expert document analysis assessment system. Your
+    task is to evaluate the confidence of extraction results for a document of
+    class {DOCUMENT_CLASS} and provide precise spatial localization for each
+    field. </background>
+
+    <task> Analyze the extraction results against the source document and
+    provide confidence assessments AND bounding box coordinates for each
+    extracted attribute. Consider factors such as: 1. Text clarity and OCR
+    quality in the source regions  2. Alignment between extracted values and
+    document content  3. Presence of clear evidence supporting the extraction 
+    4. Potential ambiguity or uncertainty in the source material  5.
+    Completeness and accuracy of the extracted information 6. Precise spatial
+    location of each field in the document </task>
+
+    <assessment-guidelines> For each attribute, provide:  - A confidence score
+    between 0.0 and 1.0 where:
+    - 1.0 = Very high confidence, clear and unambiguous evidence
+    - 0.8-0.9 = High confidence, strong evidence with minor uncertainty
+    - 0.6-0.7 = Medium confidence, reasonable evidence but some ambiguity
+    - 0.4-0.5 = Low confidence, weak or unclear evidence
+    - 0.0-0.3 = Very low confidence, little to no supporting evidence
+    - A clear explanation of the confidence reasoning - Precise spatial
+    coordinates where the field appears in the document
+
+    Guidelines:  - Base assessments on actual document content and OCR quality 
+    - Consider both text-based evidence and visual/layout clues  - Account for
+    OCR confidence scores when provided  - Be objective and specific in
+    reasoning  - If an extraction appears incorrect, score accordingly with
+    explanation - Provide tight, accurate bounding boxes around the actual text
+    </assessment-guidelines>
+
+    <spatial-localization-guidelines> For each field, provide bounding box
+    coordinates: - bbox: [x1, y1, x2, y2] coordinates in normalized 0-1000 scale
+    - page: Page number where the field appears (starting from 1)
+
+    Coordinate system: - Use normalized scale 0-1000 for both x and y axes - x1,
+    y1 = top-left corner of bounding box   - x2, y2 = bottom-right corner of
+    bounding box - Ensure x2 > x1 and y2 > y1 - Make bounding boxes tight around
+    the actual text content - If a field spans multiple lines, create a bounding
+    box that encompasses all relevant text </spatial-localization-guidelines>
+
+    <final-instructions> Analyze the extraction results against the source
+    document and provide confidence assessments with spatial localization.
+    Return a JSON object with the following structure based on the attribute
+    type:
+
+    For SIMPLE attributes:  
+    {
+      "simple_attribute_name": {
+        "confidence": 0.85,
+        "bbox": [100, 200, 300, 250],
+        "page": 1
+      }
+    }
+
+    For GROUP attributes (nested object structure):  
+    {
+      "group_attribute_name": {
+        "sub_attribute_1": {
+          "confidence": 0.90,
+          "bbox": [150, 300, 250, 320],
+          "page": 1
+        },
+        "sub_attribute_2": {
+          "confidence": 0.75,
+          "bbox": [150, 325, 280, 345],
+          "page": 1
+        }
+      }
+    }
+
+    For LIST attributes (array of assessed items): 
+    {
+      "list_attribute_name": [
+        {
+          "item_attribute_1": {
+            "confidence": 0.95,
+            "bbox": [100, 400, 200, 420],
+            "page": 1
+          },
+          "item_attribute_2": {
+            "confidence": 0.88,
+            "bbox": [250, 400, 350, 420],
+            "page": 1
+          }
+        },
+        {
+          "item_attribute_1": {
+            "confidence": 0.92,
+            "bbox": [100, 425, 200, 445],
+            "page": 1
+          },
+          "item_attribute_2": {
+            "confidence": 0.70,
+            "bbox": [250, 425, 350, 445],
+            "page": 1
+          }
+        }
+      ]
+    }
+
+    IMPORTANT:   - For LIST attributes like "Transactions", assess EACH
+    individual item in the list separately with individual bounding boxes - Each
+    transaction should be assessed as a separate object in the array with its
+    own spatial coordinates - Do NOT provide aggregate assessments for list
+    items - assess each one individually with precise locations - Include
+    assessments AND bounding boxes for ALL attributes present in the extraction
+    results - Match the exact structure of the extracted data - Provide page
+    numbers for all bounding boxes (starting from 1) </final-instructions>
+
+    <<CACHEPOINT>>
+
+    <document-image> {DOCUMENT_IMAGE} </document-image>
+
+    <ocr-text-confidence-results> {OCR_TEXT_CONFIDENCE}
+    </ocr-text-confidence-results>
+
+    <<CACHEPOINT>>
+
+    <attributes-definitions> {ATTRIBUTE_NAMES_AND_DESCRIPTIONS}
+    </attributes-definitions>
+
+    <extraction-results> {EXTRACTION_RESULTS} </extraction-results>
+  temperature: 0
+  top_p: 0.1
+  top_k: 5
+  max_tokens: 10000
+  default_confidence_threshold: 0.8
+  validation_enabled: false
+  image:
+    target_width: null
+    target_height: null
+    dpi: null
+    preprocessing: null
+  granular:
+    enabled: true
+    list_batch_size: 1
+    simple_batch_size: 3
+    max_workers: 20
+summarization:
+  enabled: true
+  model: us.anthropic.claude-3-7-sonnet-20250219-v1:0
+  system_prompt: >-
+    You are a document summarization expert who can analyze and summarize
+    documents from various domains including medical, financial, legal, and
+    general business documents. Your task is to create a summary that captures
+    the key information, main points, and important details from the document.
+    Your output must be in valid JSON format. \nSummarization Style:
+    Balanced\\nCreate a balanced summary that provides a moderate level of
+    detail. Include the main points and key supporting information, while
+    maintaining the document's overall structure. Aim for a comprehensive yet
+    concise summary.\n Your output MUST be in valid JSON format with markdown
+    content. You MUST strictly adhere to the output format specified in the
+    instructions.
+  task_prompt: >-
+    <document-text>
+    {DOCUMENT_TEXT}
+    </document-text>
+
+    Analyze the provided document (<document-text>) and create a comprehensive
+    summary.
+
+    CRITICAL INSTRUCTION: You MUST return your response as valid JSON with the
+    EXACT structure shown at the end of these instructions. Do not include any
+    explanations, notes, or text outside of the JSON structure.
+
+    Create a summary that captures the essential information from the document.
+    Your summary should:
+
+    1. Extract key information, main points, and important details
+
+    2. Maintain the original document's organizational structure where
+    appropriate
+
+    3. Preserve important facts, figures, dates, and entities
+
+    4. Reduce the length while retaining all critical information
+
+    5. Use markdown formatting for better readability (headings, lists,
+    emphasis, etc.)
+
+    6. Cite all relevant facts from the source document using inline citations
+    in the format [Cite-X, Page-Y] where X is a sequential citation number and Y
+    is the page number
+
+    7. Format citations as markdown links that reference the full citation list
+    at the bottom of the summary
+      Example: [[Cite-1, Page-3]](#cite-1-page-3)
+
+    8. At the end of the summary, include a "References" section that lists all
+    citations with their exact text from the source document in the format:
+      [Cite-X, Page-Y]: Exact text from the document
+
+    Output Format:
+
+    You MUST return ONLY valid JSON with the following structure and nothing
+    else:
+
+    ```json
+    {
+      "summary": "A comprehensive summary in markdown format with inline citations linked to a references section at the bottom"
+    }
+    ```
+
+    Do not include any text, explanations, or notes outside of this JSON
+    structure. The JSON must be properly formatted and parseable.
+  temperature: 0
+  top_p: 0.1
+  top_k: 5
+  max_tokens: 4096
+criteria_validation:
+  model: us.anthropic.claude-3-5-sonnet-20240620-v1:0
+  system_prompt: ''
+  task_prompt: ''
+  temperature: 0
+  top_p: 0.01
+  top_k: 20
+  max_tokens: 4096
+  semaphore: 3
+  max_chunk_size: 180000
+  token_size: 4
+  overlap_percentage: 10
+  response_prefix: <response>
+agents:
+  error_analyzer:
+    model_id: us.anthropic.claude-sonnet-4-20250514-v1:0
+    error_patterns:
+      - ERROR
+      - CRITICAL
+      - FATAL
+      - Exception
+      - Traceback
+      - Failed
+      - Timeout
+      - AccessDenied
+      - ThrottlingException
+    system_prompt: >-
+      You are an intelligent error analysis agent for the GenAI IDP system with
+      access to specialized diagnostic tools.
+
+      GENERAL TROUBLESHOOTING WORKFLOW:
+      1. Identify document status from DynamoDB
+      2. Find any errors reported during Step Function execution
+      3. Collect relevant logs from CloudWatch
+      4. Identify any performance issues from X-Ray traces
+      5. Provide root cause analysis based on the collected information
+
+      TOOL SELECTION STRATEGY:
+      - If user provides a filename: Use cloudwatch_document_logs and
+      dynamodb_status for document-specific analysis
+      - For system-wide issues: Use cloudwatch_logs and dynamodb_query
+      - For execution context: Use lambda_lookup or stepfunction_details
+      - For distributed tracing: Use xray_trace or xray_performance_analysis
+
+      ALWAYS format your response with exactly these three sections in this
+      order:
+
+      ## Root Cause
+      Identify the specific underlying technical reason why the error occurred.
+      Focus on the primary cause, not symptoms.
+
+      ## Recommendations
+      Provide specific, actionable steps to resolve the issue. Limit to top
+      three recommendations only.
+
+      <details>
+      <summary><strong>Evidence</strong></summary>
+
+      Format evidence with source information. Include relevant data from tool
+      responses:
+
+      **For CloudWatch logs:**
+      **Log Group:** [full log_group name]
+      **Log Stream:** [full log_stream name]
+      ```
+      [ERROR] timestamp message
+      ```
+
+      **For other sources (DynamoDB, Step Functions, X-Ray):**
+      **Source:** [service name and resource]
+      ```
+      Relevant data from tool response
+      ```
+
+      </details>
+
+      FORMATTING RULES:
+      - Use the exact three-section structure above
+      - Make Evidence section collapsible using HTML details tags
+      - Include relevant data from all tool responses (CloudWatch, DynamoDB,
+      Step Functions, X-Ray)
+      - For CloudWatch: Show complete log group and log stream names without
+      truncation
+      - Present evidence data in code blocks with appropriate source labels
+
+      ANALYSIS GUIDELINES:
+      - Use multiple tools for comprehensive analysis when needed
+      - Start with document-specific tools for targeted queries
+      - Use system-wide tools for pattern analysis
+      - Combine DynamoDB status with CloudWatch logs for complete picture
+      - Leverage X-Ray for distributed system issues
+
+      ROOT CAUSE DETERMINATION:
+      1. Document Status: Check dynamodb_status first
+      2. Execution Details: Use stepfunction_details for workflow failures
+      3. Log Analysis: Use cloudwatch_document_logs or cloudwatch_logs for error
+      details
+      4. Distributed Tracing: Use xray_performance_analysis for service
+      interaction issues
+      5. Context: Use lambda_lookup for execution environment
+
+      RECOMMENDATION GUIDELINES:
+      For code-related issues or system bugs:
+      - Do not suggest code modifications
+      - Include error details, timestamps, and context
+
+      For configuration-related issues:
+      - Direct users to UI configuration panel
+      - Specify exact configuration section and parameter names
+
+      For operational issues:
+      - Provide immediate troubleshooting steps
+      - Include preventive measures
+
+      TIME RANGE PARSING:
+      - recent: 1 hour
+      - last week: 168 hours  
+      - last day: 24 hours
+      - No time specified: 24 hours (default)
+
+      IMPORTANT: Do not include any search quality reflections, search quality
+      scores, or meta-analysis sections in your response. Only provide the three
+      required sections: Root Cause, Recommendations, and Evidence.
+    parameters:
+      max_log_events: 5
+      time_range_hours_default: 24
+      max_log_message_length: 400
+      max_events_per_log_group: 5
+      max_log_groups: 20
+      max_stepfunction_timeline_events: 3
+      max_stepfunction_error_length: 400
+      xray_slow_segment_threshold_ms: 5000
+      xray_error_rate_threshold: 0.05
+      xray_response_time_threshold_ms: 10000
+  chat_companion:
+    model_id: us.anthropic.claude-sonnet-4-20250514-v1:0:1m
+    error_patterns:
+      - ERROR
+      - CRITICAL
+      - FATAL
+      - Exception
+      - Traceback
+      - Failed
+      - Timeout
+      - AccessDenied
+      - ThrottlingException
+    system_prompt: |2-
+      You are an intelligent error analysis agent for the GenAI IDP system with access to specialized diagnostic tools.
+
+      GENERAL TROUBLESHOOTING WORKFLOW:
+      1. Identify document status from DynamoDB
+      2. Find any errors reported during Step Function execution
+      3. Collect relevant logs from CloudWatch
+      4. Identify any performance issues from X-Ray traces
+      5. Provide root cause analysis based on the collected information
+
+      TOOL SELECTION STRATEGY:
+      - If user provides a filename: Use cloudwatch_document_logs and dynamodb_status for document-specific analysis
+      - For system-wide issues: Use cloudwatch_logs and dynamodb_query
+      - For execution context: Use lambda_lookup or stepfunction_details
+      - For distributed tracing: Use xray_trace or xray_performance_analysis
+
+      ALWAYS format your response with exactly these three sections in this order:
+
+      ## Root Cause
+      Identify the specific underlying technical reason why the error occurred. Focus on the primary cause, not symptoms.
+
+      ## Recommendations
+      Provide specific, actionable steps to resolve the issue. Limit to top three recommendations only.
+
+      <details>
+      <summary><strong>Evidence</strong></summary>
+
+      Format evidence with source information. Include relevant data from tool responses:
+
+      **For CloudWatch logs:**
+      **Log Group:** [full log_group name]
+      **Log Stream:** [full log_stream name]
+      ```
+      [ERROR] timestamp message
+      ```
+
+      **For other sources (DynamoDB, Step Functions, X-Ray):**
+      **Source:** [service name and resource]
+      ```
+      Relevant data from tool response
+      ```
+
+      </details>
+
+      FORMATTING RULES:
+      - Use the exact three-section structure above
+      - Make Evidence section collapsible using HTML details tags
+      - Include relevant data from all tool responses (CloudWatch, DynamoDB, Step Functions, X-Ray)
+      - For CloudWatch: Show complete log group and log stream names without truncation
+      - Present evidence data in code blocks with appropriate source labels
+
+      ANALYSIS GUIDELINES:
+      - Use multiple tools for comprehensive analysis when needed
+      - Start with document-specific tools for targeted queries
+      - Use system-wide tools for pattern analysis
+      - Combine DynamoDB status with CloudWatch logs for complete picture
+      - Leverage X-Ray for distributed system issues
+
+      ROOT CAUSE DETERMINATION:
+      1. Document Status: Check dynamodb_status first
+      2. Execution Details: Use stepfunction_details for workflow failures
+      3. Log Analysis: Use cloudwatch_document_logs or cloudwatch_logs for error details
+      4. Distributed Tracing: Use xray_performance_analysis for service interaction issues
+      5. Context: Use lambda_lookup for execution environment
+
+      RECOMMENDATION GUIDELINES:
+      For code-related issues or system bugs:
+      - Do not suggest code modifications
+      - Include error details, timestamps, and context
+
+      For configuration-related issues:
+      - Direct users to UI configuration panel
+      - Specify exact configuration section and parameter names
+
+      For operational issues:
+      - Provide immediate troubleshooting steps
+      - Include preventive measures
+
+      TIME RANGE PARSING:
+      - recent: 1 hour
+      - last week: 168 hours  
+      - last day: 24 hours
+      - No time specified: 24 hours (default)
+
+      IMPORTANT: Do not include any search quality reflections, search quality scores, or meta-analysis sections in your response. Only provide the three required sections: Root Cause, Recommendations, and Evidence.
+    parameters:
+      max_log_events: 5
+      time_range_hours_default: 24
+      max_log_message_length: 400
+      max_events_per_log_group: 5
+      max_log_groups: 20
+      max_stepfunction_timeline_events: 3
+      max_stepfunction_error_length: 400
+      xray_slow_segment_threshold_ms: 5000
+      xray_error_rate_threshold: 0.05
+      xray_response_time_threshold_ms: 10000
+pricing:
+  - name: textract/detect_document_text
+    units:
+      - name: pages
+        price: 0.0015
+  - name: textract/analyze_document-Layout
+    units:
+      - name: pages
+        price: 0.004
+  - name: textract/analyze_document-Signatures
+    units:
+      - name: pages
+        price: 0.0035
+  - name: textract/analyze_document-Forms
+    units:
+      - name: pages
+        price: 0.05
+  - name: textract/analyze_document-Tables
+    units:
+      - name: pages
+        price: 0.015
+  - name: textract/analyze_document-Tables+Forms
+    units:
+      - name: pages
+        price: 0.065
+  - name: bedrock/us.amazon.nova-lite-v1:0
+    units:
+      - name: inputTokens
+        price: 6.e-8
+      - name: outputTokens
+        price: 2.4e-7
+      - name: cacheReadInputTokens
+        price: 1.5e-8
+      - name: cacheWriteInputTokens
+        price: 6.e-8
+  - name: bedrock/us.amazon.nova-pro-v1:0
+    units:
+      - name: inputTokens
+        price: 8.e-7
+      - name: outputTokens
+        price: 0.0000032
+      - name: cacheReadInputTokens
+        price: 2.e-7
+      - name: cacheWriteInputTokens
+        price: 8.e-7
+  - name: bedrock/us.amazon.nova-premier-v1:0
+    units:
+      - name: inputTokens
+        price: 0.0000025
+      - name: outputTokens
+        price: 0.0000125
+  - name: bedrock/us.anthropic.claude-3-haiku-20240307-v1:0
+    units:
+      - name: inputTokens
+        price: 2.5e-7
+      - name: outputTokens
+        price: 0.00000125
+  - name: bedrock/us.anthropic.claude-3-5-haiku-20241022-v1:0
+    units:
+      - name: inputTokens
+        price: 8.e-7
+      - name: outputTokens
+        price: 0.000004
+      - name: cacheReadInputTokens
+        price: 8.e-8
+      - name: cacheWriteInputTokens
+        price: 0.000001
+  - name: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+    units:
+      - name: inputTokens
+        price: 0.0000011
+      - name: outputTokens
+        price: 0.0000055
+      - name: cacheReadInputTokens
+        price: 1.1e-7
+      - name: cacheWriteInputTokens
+        price: 0.0000014
+  - name: bedrock/us.anthropic.claude-3-5-sonnet-20241022-v2:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0:1m
+    units:
+      - name: inputTokens
+        price: 0.000006
+      - name: outputTokens
+        price: 0.0000225
+      - name: cacheReadInputTokens
+        price: 6.e-7
+      - name: cacheWriteInputTokens
+        price: 0.0000075
+  - name: bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    units:
+      - name: inputTokens
+        price: 0.0000033
+      - name: outputTokens
+        price: 0.0000165
+      - name: cacheReadInputTokens
+        price: 3.3e-7
+      - name: cacheWriteInputTokens
+        price: 0.000004125
+  - name: bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0:1m
+    units:
+      - name: inputTokens
+        price: 0.0000066
+      - name: outputTokens
+        price: 0.00002475
+      - name: cacheReadInputTokens
+        price: 6.6e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000825
+  - name: bedrock/us.anthropic.claude-opus-4-20250514-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000015
+      - name: outputTokens
+        price: 0.000075
+      - name: cacheReadInputTokens
+        price: 0.0000015
+      - name: cacheWriteInputTokens
+        price: 0.00001875
+  - name: bedrock/us.anthropic.claude-opus-4-1-20250805-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000015
+      - name: outputTokens
+        price: 0.000075
+      - name: cacheReadInputTokens
+        price: 0.0000015
+      - name: cacheWriteInputTokens
+        price: 0.00001875
+  - name: bedrock/eu.amazon.nova-lite-v1:0
+    units:
+      - name: inputTokens
+        price: 7.8e-8
+      - name: outputTokens
+        price: 3.1e-7
+      - name: cacheReadInputTokens
+        price: 1.9e-8
+      - name: cacheWriteInputTokens
+        price: 7.8e-8
+  - name: bedrock/eu.amazon.nova-pro-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000001
+      - name: outputTokens
+        price: 0.0000042
+      - name: cacheReadInputTokens
+        price: 2.6e-7
+      - name: cacheWriteInputTokens
+        price: 0.000001
+  - name: bedrock/eu.anthropic.claude-3-haiku-20240307-v1:0
+    units:
+      - name: inputTokens
+        price: 2.5e-7
+      - name: outputTokens
+        price: 0.00000125
+  - name: bedrock/eu.anthropic.claude-haiku-4-5-20251001-v1:0
+    units:
+      - name: inputTokens
+        price: 0.0000011
+      - name: outputTokens
+        price: 0.0000055
+      - name: cacheReadInputTokens
+        price: 1.1e-7
+      - name: cacheWriteInputTokens
+        price: 0.0000014
+  - name: bedrock/eu.anthropic.claude-3-5-sonnet-20241022-v2:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/eu.anthropic.claude-3-7-sonnet-20250219-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/eu.anthropic.claude-sonnet-4-20250514-v1:0
+    units:
+      - name: inputTokens
+        price: 0.000003
+      - name: outputTokens
+        price: 0.000015
+      - name: cacheReadInputTokens
+        price: 3.e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000375
+  - name: bedrock/eu.anthropic.claude-sonnet-4-5-20250929-v1:0
+    units:
+      - name: inputTokens
+        price: 0.0000033
+      - name: outputTokens
+        price: 0.0000165
+      - name: cacheReadInputTokens
+        price: 3.3e-7
+      - name: cacheWriteInputTokens
+        price: 0.000004125
+  - name: bedrock/eu.anthropic.claude-sonnet-4-5-20250929-v1:0:1m
+    units:
+      - name: inputTokens
+        price: 0.0000066
+      - name: outputTokens
+        price: 0.00002475
+      - name: cacheReadInputTokens
+        price: 6.6e-7
+      - name: cacheWriteInputTokens
+        price: 0.00000825
+  - name: lambda/requests
+    units:
+      - name: invocations
+        price: 2.e-7
+  - name: lambda/duration
+    units:
+      - name: gb_seconds
+        price: 0.0000166667
+
+
