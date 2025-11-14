@@ -187,7 +187,15 @@ export const PROCESSING_STATUS_OPTIONS = [
   { label: 'Failed', value: 'FAILED' },
 ];
 
-export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItems = [], onDelete, onReprocess, statusFilter, onStatusFilterChange, ...props }) => {
+export const DocumentsCommonHeader = ({
+  resourceName = 'Documents',
+  selectedItems = [],
+  onDelete,
+  onReprocess,
+  statusFilter,
+  onStatusFilterChange,
+  ...props
+}) => {
   const onPeriodToLoadChange = ({ detail }) => {
     const { id } = detail;
     const shardCount = TIME_PERIOD_DROPDOWN_CONFIG[id].count;
@@ -197,18 +205,18 @@ export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItem
 
   const onStatusFilterClick = ({ detail }) => {
     const clickedValue = detail.id;
-    const currentValues = (statusFilter || []).map(opt => opt.value);
-    
+    const currentValues = (statusFilter || []).map((opt) => opt.value);
+
     let newSelectedOptions;
     if (currentValues.includes(clickedValue)) {
       // Remove if already selected
-      newSelectedOptions = statusFilter.filter(opt => opt.value !== clickedValue);
+      newSelectedOptions = statusFilter.filter((opt) => opt.value !== clickedValue);
     } else {
       // Add if not selected
-      const clickedOption = PROCESSING_STATUS_OPTIONS.find(opt => opt.value === clickedValue);
+      const clickedOption = PROCESSING_STATUS_OPTIONS.find((opt) => opt.value === clickedValue);
       newSelectedOptions = [...(statusFilter || []), clickedOption];
     }
-    
+
     if (onStatusFilterChange) {
       onStatusFilterChange(newSelectedOptions);
     }
@@ -216,14 +224,12 @@ export const DocumentsCommonHeader = ({ resourceName = 'Documents', selectedItem
 
   // eslint-disable-next-line
   const periodText = TIME_PERIOD_DROPDOWN_ITEMS.filter((i) => i.count === props.periodsToLoad)[0]?.text || '';
-  
-  const selectedStatusValues = (statusFilter || []).map(opt => opt.value);
-  const statusFilterText = statusFilter && statusFilter.length > 0 
-    ? `Status: ${statusFilter.length} selected` 
-    : 'Status: All';
+
+  const selectedStatusValues = (statusFilter || []).map((opt) => opt.value);
+  const statusFilterText = statusFilter && statusFilter.length > 0 ? `Status: ${statusFilter.length} selected` : 'Status: All';
 
   // Convert status options to ButtonDropdown items with checkboxes
-  const statusDropdownItems = PROCESSING_STATUS_OPTIONS.map(opt => ({
+  const statusDropdownItems = PROCESSING_STATUS_OPTIONS.map((opt) => ({
     id: opt.value,
     text: opt.label,
     iconName: selectedStatusValues.includes(opt.value) ? 'check' : undefined,
